@@ -1,0 +1,121 @@
+{
+    "default_migration_param" : {
+        "driver" : "MongoDB",
+        "time" : "Complete",
+        "amount" : "Minimal",
+        "location" : "Application",
+        "operationExecution" : "Stepwise",
+        "selectedClassname" : "All",
+        "schemaCache" : "TRUE",
+        "commandCache" : "TRUE",
+        "composerCache" : "TRUE",
+        "aggregate" : "FALSE",
+        "migrationType" : "Entity-based",
+        "useView" : "FALSE"
+    },
+    "benchmark_chains" : [
+        {
+            "name" : "non-join",
+            "sems_docker" : {
+                "image" : "dbishagen/darwin:master-evobench",
+                "name" : "darwin",
+                "environment" : [
+                    "DARWIN_STORAGE=mongo docker",
+                    "DARWIN_ENTITY_MANAGER=mongo docker"
+                ],
+                "ports" : {
+                    "8080" : "127.0.0.1, 8080"
+                },
+                "command" : "-Xms8G -Xmx32G"
+            },
+            "database_docker" : {
+                "image" : "dbishagen/darwin-dataset:unibench-mongo-sf0_1-big-idx",
+                "name" : "mongo_db",
+                "ports" :  {
+                    "27017" : "127.0.0.1, 27017"
+                }
+            },
+            "dbtype" : "mongodb",
+            "runs" : 5,
+            "chain" : [
+                {
+                    "command" : "smo",
+                    "id" : "smo-1-copy",
+                    "operations" : [
+                        "copy Person.email to Post.email where Person.id = Post.person_id"
+                    ]
+                },
+                {
+                    "command" : "migrate",
+                    "id" : "copy"
+                },
+                {
+                    "command" : "reset"
+                },
+                {
+                    "command" : "smo",
+                    "id" : "smo-2-move",
+                    "operations" : [
+                        "move Person.email to Post.email where Person.id = Post.person_id"
+                    ]
+                },
+                {
+                    "command" : "migrate",
+                    "id" : "move"
+                }
+            ]
+        },
+        {
+            "name" : "join",
+            "sems_docker" : {
+                "image" : "dbishagen/darwin:revised-evobench",
+                "name" : "darwin",
+                "environment" : [
+                    "DARWIN_STORAGE=mongo docker",
+                    "DARWIN_ENTITY_MANAGER=mongo docker"
+                ],
+                "ports" : {
+                    "8080" : "127.0.0.1, 8080"
+                },
+                "command" : "-Xms8G -Xmx32G"
+            },
+            "database_docker" : {
+                "image" : "dbishagen/darwin-dataset:unibench-mongo-sf0_1-big-idx",
+                "name" : "mongo_db",
+                "ports" :  {
+                    "27017" : "127.0.0.1, 27017"
+                }
+            },
+            "dbtype" : "mongodb",
+            "runs" : 5,
+            "chain" : [
+                {
+                    "command" : "smo",
+                    "id" : "smo-1-copy",
+                    "operations" : [
+                        "copy Person.email to Post.email where Person.id = Post.person_id"
+                    ]
+                },
+                {
+                    "command" : "migrate",
+                    "id" : "copy"
+                },
+                {
+                    "command" : "reset"
+                },
+                {
+                    "command" : "smo",
+                    "id" : "smo-2-move",
+                    "operations" : [
+                        "move Person.email to Post.email where Person.id = Post.person_id"
+                    ]
+                },
+                {
+                    "command" : "migrate",
+                    "id" : "move"
+                }
+            ]
+        }
+    ]
+}
+

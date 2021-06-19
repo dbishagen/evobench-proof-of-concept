@@ -1,0 +1,201 @@
+{
+    "default_migration_param" : {
+        "driver" : "MongoDB",
+        "time" : "Complete",
+        "amount" : "Minimal",
+        "location" : "Application",
+        "operationExecution" : "Stepwise",
+        "selectedClassname" : "All",
+        "schemaCache" : "TRUE",
+        "commandCache" : "TRUE",
+        "composerCache" : "TRUE",
+        "aggregate" : "FALSE",
+        "migrationType" : "Entity-based",
+        "useView" : "FALSE"
+    },
+    "benchmark_chains" : [
+        {
+            "name" : "stepwise-real",
+            "sems_docker" : {
+                "image" : "dbishagen/darwin:revised-evobench",
+                "name" : "darwin",
+                "environment" : [
+                    "DARWIN_STORAGE=mongo docker",
+                    "DARWIN_ENTITY_MANAGER=mongo docker"
+                ],
+                "ports" : {
+                    "8080" : "127.0.0.1, 8080"
+                },
+                "command" : "-Xms8G -Xmx32G"
+            },
+            "database_docker" : {
+                "image" : "dbishagen/darwin-dataset:mediawiki-mongo-real-idx",
+                "name" : "mongo_db",
+                "ports" :  {
+                    "27017" : "127.0.0.1, 27017"
+                }
+            },
+            "dbtype" : "mongodb",
+            "runs" : 5,
+            "chain" : [
+                {
+                    "command" : "smo",
+                    "id" : "smo-1-move",
+                    "operations" : [
+                        "move revision.rev_user to page.rev_user where revision.rev_page = page.page_id"
+                    ]
+                },
+                {
+                    "command" : "migrate",
+                    "id" : "1-move"
+                },
+                {
+                    "command" : "smo",
+                    "id" : "smo-2-move",
+                    "operations" : [
+                        "move revision.rev_user_text to page.rev_user_text where revision.rev_page = page.page_id"
+                    ]
+                },
+                {
+                    "command" : "migrate",
+                    "id" : "2-move"
+                },
+                {
+                    "command" : "smo",
+                    "id" : "smo-3-copy",
+                    "operations" : [
+                        "copy revision.rev_timestamp to page.rev_timestamp where revision.rev_page = page.page_id"
+                    ]
+                },
+                {
+                    "command" : "migrate",
+                    "id" : "3-copy"
+                },
+                {
+                    "command" : "smo",
+                    "id" : "smo-4-rename",
+                    "operations" : [
+                        "rename page.rev_user to page_user"
+                    ]
+                },
+                {
+                    "command" : "migrate",
+                    "id" : "4-rename"
+                },
+                {
+                    "command" : "smo",
+                    "id" : "smo-5-rename",
+                    "operations" : [
+                        "rename page.rev_user_text to page_user_text"
+                    ]
+                },
+                {
+                    "command" : "migrate",
+                    "id" : "5-rename"
+                },
+                {
+                    "command" : "smo",
+                    "id" : "smo-6-rename",
+                    "operations" : [
+                        "rename page.rev_timestamp to page_timestamp"
+                    ]
+                },
+                {
+                    "command" : "migrate",
+                    "id" : "6-rename"
+                }
+            ]
+        },
+        {
+            "name" : "composite-real",
+            "sems_docker" : {
+                "image" : "dbishagen/darwin:revised-evobench",
+                "name" : "darwin",
+                "environment" : [
+                    "DARWIN_STORAGE=mongo docker",
+                    "DARWIN_ENTITY_MANAGER=mongo docker"
+                ],
+                "ports" : {
+                    "8080" : "127.0.0.1, 8080"
+                },
+                "command" : "-Xms8G -Xmx32G"
+            },
+            "database_docker" : {
+                "image" : "dbishagen/darwin-dataset:mediawiki-mongo-real-idx",
+                "name" : "mongo_db",
+                "ports" :  {
+                    "27017" : "127.0.0.1, 27017"
+                }
+            },
+            "dbtype" : "mongodb",
+            "runs" : 5,
+            "chain" : [
+                {
+                    "command" : "smo",
+                    "id" : "smo-composite",
+                    "operations" : [
+                        "move revision.rev_user to page.rev_user where revision.rev_page = page.page_id",
+                        "move revision.rev_user_text to page.rev_user_text where revision.rev_page = page.page_id",
+                        "copy revision.rev_timestamp to page.rev_timestamp where revision.rev_page = page.page_id",
+                        "rename page.rev_user to page_user",
+                        "rename page.rev_user_text to page_user_text",
+                        "rename page.rev_timestamp to page_timestamp"
+                    ]
+                },
+                {
+                    "command" : "migrate",
+                    "id" : "composite",
+                    "migration_parameter" : {
+                        "operationExecution" : "Composite"
+                    }
+                }
+            ]
+        },
+        {
+            "name" : "composite-generated",
+            "sems_docker" : {
+                "image" : "dbishagen/darwin:revised-evobench",
+                "name" : "darwin",
+                "environment" : [
+                    "DARWIN_STORAGE=mongo docker",
+                    "DARWIN_ENTITY_MANAGER=mongo docker"
+                ],
+                "ports" : {
+                    "8080" : "127.0.0.1, 8080"
+                },
+                "command" : "-Xms8G -Xmx32G"
+            },
+            "database_docker" : {
+                "image" : "dbishagen/darwin-dataset:mediawiki-mongo-gen-idx",
+                "name" : "mongo_db",
+                "ports" :  {
+                    "27017" : "127.0.0.1, 27017"
+                }
+            },
+            "dbtype" : "mongodb",
+            "runs" : 5,
+            "chain" : [
+                {
+                    "command" : "smo",
+                    "id" : "smo-composite",
+                    "operations" : [
+                        "move revision.rev_user to page.rev_user where revision.rev_page = page.page_id",
+                        "move revision.rev_user_text to page.rev_user_text where revision.rev_page = page.page_id",
+                        "copy revision.rev_timestamp to page.rev_timestamp where revision.rev_page = page.page_id",
+                        "rename page.rev_user to page_user",
+                        "rename page.rev_user_text to page_user_text",
+                        "rename page.rev_timestamp to page_timestamp"
+                    ]
+                },
+                {
+                    "command" : "migrate",
+                    "id" : "composite",
+                    "migration_parameter" : {
+                        "operationExecution" : "Composite"
+                    }
+                }
+            ]
+        }
+    ]
+}
+
